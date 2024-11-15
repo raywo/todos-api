@@ -1,0 +1,143 @@
+openapi: 3.0.1
+
+info:
+  title: Todos Management Service
+  description: Manages todos, topics, priorities and assignees.
+  version: '1.0.0'
+
+servers:
+  - url: http://api.foo.de/v1
+    description: Public URL
+
+tags:
+  - name: todos
+    description: All operations to handle todos.
+
+paths:
+  /todos:
+    get:
+      tags:
+        - todos
+      summary: Get all todos.
+      operationId: findAll
+      responses:
+        '200':
+          description: The todos were found and returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Todo'
+    post:
+      tags:
+        - todos
+      summary: Create a single todo.
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Todo'
+        required: true
+      responses:
+        '201':
+          description: The todo was created and returned.
+          headers:
+            Location:
+              description: The URL of the created todo.
+              style: simple
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Todo'
+        '400':
+          description: The given entity was invalid.
+
+  /todos/{id}:
+    parameters:
+      - $ref: '#/components/parameters/TodosIdParameter'
+    get:
+      tags:
+        - todos
+      summary: Find a single todo by id.
+      operationId: findById
+      responses:
+        '200':
+          description: The todo was found and returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Todo'
+        '404':
+          description: A todo with the given id could not be found.
+    put:
+      tags:
+        - todos
+      summary: Replace a single todo.
+      operationId: update
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Todo'
+        required: true
+      responses:
+        '204':
+          description: The todo was replaced.
+        '404':
+          description: A todo with the given id could not be found.
+        '400':
+          description: The given entity was invalid.
+    delete:
+      tags:
+        - todos
+      summary: Delete a single todo by id.
+      operationId: delete
+      responses:
+        '204':
+          description: The todo was deleted.
+        '404':
+          description: A todo with the given id could not be found.
+
+components:
+  schemas:
+    Todo:
+      required:
+        - title
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          minLength: 1
+          maxLength: 50
+          type: string
+        description:
+          type: string
+          maxLength: 255
+        due_date:
+          type: string
+          description: The day until the todo has to be completed.
+          format: date
+        status:
+          type: string
+          enum:
+            - new
+            - progress
+            - completed
+            - archived
+
+  parameters:
+    TodosIdParameter:
+      name: id
+      in: path
+      description: The id of the todo.
+      required: true
+      schema:
+        type: string
+        format: uuid
