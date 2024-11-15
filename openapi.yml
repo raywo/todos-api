@@ -117,13 +117,16 @@ components:
           minLength: 1
           maxLength: 50
           type: string
+          example: Do something meaningful
         description:
           type: string
           maxLength: 255
+          example: Do something that makes a positive impact in someone’s life.
         due_date:
           type: string
-          description: The day until the todo has to be completed.
           format: date
+          description: The day until the todo has to be completed.
+          example: 2024-11-18T10:00:00
         status:
           type: string
           enum:
