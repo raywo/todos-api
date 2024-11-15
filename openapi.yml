@@ -20,15 +20,16 @@ paths:
         - todos
       summary: Get all todos.
       operationId: findAll
+      parameters:
+        - $ref: '#/components/parameters/PaginationOffsetParameter'
+        - $ref: '#/components/parameters/PaginationLimitParameter'
       responses:
         '200':
           description: The todos were found and returned.
           content:
-            application/json:
+            application/hal+json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Todo'
+                $ref: '#/components/schemas/PaginatedTodos'
     post:
       tags:
         - todos
@@ -146,7 +147,6 @@ components:
           type: string
           description: The day until this todo is due.
           format: date
-          description: The day until the todo has to be completed.
           example: 2024-11-18T10:00:00
         status:
           type: string
@@ -203,6 +203,114 @@ components:
           maximum: 599
           example: 404
 
+    Link:
+      type: object
+      properties:
+        href:
+          type: string
+          description: indicates the target resource URI
+        rel:
+          type: string
+          description: describes how the current context is related to the target sourcen
+        type:
+          type: string
+          description: indicates the expected resource media type (GET, POST, PUT, DELETE)
+      required:
+        - href
+
+    Links:
+      type: object
+      description: alternate HATEOAS (HAL) navigation
+      properties:
+        self:
+          $ref: '#/components/schemas/Link'
+        next:
+          $ref: '#/components/schemas/Link'
+        prev:
+          $ref: '#/components/schemas/Link'
+        first:
+          $ref: '#/components/schemas/Link'
+        last:
+          $ref: '#/components/schemas/Link'
+
+    PaginationLimit:
+      type: integer
+      minimum: 1
+      maximum: 100
+
+    PaginationOffset:
+      type: integer
+      minimum: 0
+    Pagination:
+      type: object
+      description: default page navigation
+      properties:
+        total_elements:
+          type: integer
+          description: Number of all elements of the return list
+          minimum: 0
+        limit:
+          $ref: '#/components/schemas/PaginationLimit'
+        offset:
+          $ref: '#/components/schemas/PaginationOffset'
+      required:
+        - total_elements
+
+    PaginatedTodos:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Todo'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        _links:
+          $ref: '#/components/schemas/Links'
+      required:
+        - items
+        - pagination
+      example: {
+        "items": [
+          {
+            "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "title": "Contact Support",
+            "description": "It's important to contact the support.",
+            "due_date": "2025-01-15",
+            "status": "new"
+          },
+          {
+            "id": "5d55b4be-9b8b-4f7f-86d9-9fe58d808273",
+            "title": "Read documentation",
+            "description": "We should read the documentation!",
+            "due_date": "2024-10-25",
+            "status": "progress"
+          }
+        ],
+        "pagination": {
+          "total_elements": 1576,
+          "limit": 2,
+          "offset": 160
+        },
+        "_links": {
+          "self": {
+            "href": "https://my.api.com/todos?offset=160&limit=2"
+          },
+          "next": {
+            "href": "https://my.api.com/todos?offset=162&limit=2"
+          },
+          "prev": {
+            "href": "https://my.api.com/todos?offset=158&limit=2"
+          },
+          "first": {
+            "href": "https://my.api.com/todos?offset=0&limit=2"
+          },
+          "last": {
+            "href": "https://my.api.com/todos?offset=1574&limit=2"
+          }
+        }
+      }
+
   parameters:
     TodosIdParameter:
       name: id
@@ -212,3 +320,17 @@ components:
       schema:
         type: string
         format: uuid
+
+    PaginationOffsetParameter:
+      name: offset
+      in: query
+      required: true
+      schema:
+        $ref: '#/components/schemas/PaginationOffset'
+
+    PaginationLimitParameter:
+      name: limit
+      in: query
+      required: true
+      schema:
+        $ref: '#/components/schemas/PaginationLimit'
