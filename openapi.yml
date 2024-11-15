@@ -145,8 +145,8 @@ components:
           example: Do something that makes a positive impact in someone’s life.
         due_date:
           type: string
-          description: The day until this todo is due.
           format: date
+          description: The day until this todo is due.
           example: 2024-11-18T10:00:00
         status:
           type: string
