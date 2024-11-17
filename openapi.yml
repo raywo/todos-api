@@ -13,6 +13,11 @@ tags:
   - name: todos
     description: All operations to handle todos.
 
+# Describe security on root level to apply it to all operations
+# https://swagger.io/docs/specification/v3_0/authentication/
+security:
+  - jwtAuth: []
+
 paths:
   /todos:
     get:
@@ -23,6 +28,10 @@ paths:
       parameters:
         - $ref: '#/components/parameters/PaginationOffsetParameter'
         - $ref: '#/components/parameters/PaginationLimitParameter'
+      # No security needed for this operation (This is only provided as an
+      # example. It would probably be a better idea to create a separate
+      # non-secure API and put endpoints which don’t need security there.)
+      security: []
       responses:
         '200':
           description: The todos were found and returned.
@@ -60,6 +69,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
 
   /todos/{id}:
     parameters:
@@ -82,6 +93,9 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
     put:
       tags:
         - todos
@@ -96,14 +110,16 @@ paths:
       responses:
         '204':
           description: The todo was replaced.
-        '404':
-          description: A todo with the given id could not be found.
+        '400':
+          description: The given entity was invalid.
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
-        '400':
-          description: The given entity was invalid.
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: A todo with the given id could not be found.
           content:
             application/problem+json:
               schema:
@@ -116,6 +132,8 @@ paths:
       responses:
         '204':
           description: The todo was deleted.
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: A todo with the given id could not be found.
           content:
@@ -155,6 +173,7 @@ components:
             - progress
             - completed
             - archived
+
 
     ProblemDetail:
       description: Problem details defined by RFC-9457 (https://datatracker.ietf.org/doc/rfc9457/)
@@ -334,3 +353,13 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/PaginationLimit'
+
+  securitySchemes:
+    jwtAuth: # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT # optional, just for documentation purposes
+
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
