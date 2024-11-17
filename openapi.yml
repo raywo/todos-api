@@ -13,6 +13,11 @@ tags:
   - name: todos
     description: All operations to handle todos.
 
+# Describe security on root level to apply it to all operations
+# https://swagger.io/docs/specification/v3_0/authentication/
+security:
+  - jwtAuth: []
+
 paths:
   /todos:
     get:
@@ -20,6 +25,10 @@ paths:
         - todos
       summary: Get all todos.
       operationId: findAll
+      # No security needed for this operation (This is only provided as an
+      # example. It would probably be a better idea to create a separate
+      # non-secure API and put endpoints which don’t need security there.)
+      security: []
       responses:
         '200':
           description: The todos were found and returned.
@@ -55,6 +64,8 @@ paths:
                 $ref: '#/components/schemas/Todo'
         '400':
           description: The given entity was invalid.
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
 
   /todos/{id}:
     parameters:
@@ -73,6 +84,8 @@ paths:
                 $ref: '#/components/schemas/Todo'
         '404':
           description: A todo with the given id could not be found.
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
     put:
       tags:
         - todos
@@ -87,10 +100,12 @@ paths:
       responses:
         '204':
           description: The todo was replaced.
-        '404':
-          description: A todo with the given id could not be found.
         '400':
           description: The given entity was invalid.
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: A todo with the given id could not be found.
     delete:
       tags:
         - todos
@@ -99,6 +114,8 @@ paths:
       responses:
         '204':
           description: The todo was deleted.
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: A todo with the given id could not be found.
 
@@ -134,6 +151,16 @@ components:
             - progress
             - completed
             - archived
+
+  securitySchemes:
+    jwtAuth: # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT # optional, just for documentation purposes
+
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
 
   parameters:
     TodosIdParameter:
